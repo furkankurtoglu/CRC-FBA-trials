@@ -161,52 +161,49 @@ std::vector<std::vector<double>> create_cell_sphere_positions(double cell_radius
 
 void setup_tissue( void )
 {
-	double cell_radius = cell_defaults.phenotype.geometry.radius;
-	double tumor_radius = parameters.doubles( "tumor_radius" ); // 250.0; 
+/* 	double cell_radius = cell_defaults.phenotype.geometry.radius;
+	double tumor_radius = 12; // 10.0; 
 	std::vector<std::vector<double>> positions = create_cell_sphere_positions(cell_radius, tumor_radius);
-	std::cout << "creating " << positions.size() << " closely-packed tumor cells ... " << std::endl;
+	std::cout << "creating " << positions.size() << " closely-packed tumor cells ... " << std::endl; */
 
+    std::vector<double> vect1{ 0.0, 0.0, 0.0 };
+    
 	Cell* pCell = NULL;
-	for( int i=0; i < positions.size(); i++ )
+    pCell = create_cell(get_cell_definition("metabolic cell")); // tumor cell
+    pCell->assign_position( vect1 );
+    dFBAIntracellular *model = (dFBAIntracellular*) pCell->phenotype.intracellular;
+    
+    
+/* 	for( int i=0; i < positions.size(); i++ )
 	{
 		pCell = create_cell(get_cell_definition("metabolic cell")); // tumor cell
 		pCell->assign_position( positions[i] );
 		dFBAIntracellular *model = (dFBAIntracellular*) pCell->phenotype.intracellular;
-	}
+	} */
 	
 	return; 
 }
 
-void update_cell(PhysiCell::Cell* pCell, PhysiCell::Phenotype& phenotype, double dt ){
-
+void update_cell(PhysiCell::Cell* pCell, PhysiCell::Phenotype& phenotype, double dt )
+{
+    float growth_rate;
 	dFBAIntracellular *model = (dFBAIntracellular*) phenotype.intracellular;
-	model->update(pCell, phenotype, dt);
-  
-  /*
-  phenotype.volume.fluid += dt * phenotype.volume.fluid_change_rate *
-  	( phenotype.volume.target_fluid_fraction * phenotype.volume.total - phenotype.volume.fluid );
+    growth_rate = model->update(pCell, phenotype, dt);
+	//std::cout << "TEST : " << growth_rate << std::endl;
+    float volume_increase_ratio = 1 + (growth_rate / 60 / 2 ) * dt;
+    phenotype.volume.multiply_by_ratio( volume_increase_ratio );
+    
+    double cell_volume = phenotype.volume.total;
+    //std::cout << cell_volume << std::endl;
+    if (cell_volume > 5000)
+    {
+        phenotype.cycle.data.transition_rate(0,1) = 9e99;
+    }
+    if (cell_volume < 5000)
+    {
+        phenotype.cycle.data.transition_rate(0,1) = 0.0;
+    }
 
-  if( phenotype.volume.fluid < 0.0 )
-  { phenotype.volume.fluid = 0.0; }
-
-  phenotype.volume.cytoplasmic_fluid = phenotype.volume.fluid;
-
-  phenotype.volume.cytoplasmic_solid += dt * phenotype.volume.cytoplasmic_biomass_change_rate *
-    (phenotype.volume.target_solid_cytoplasmic - phenotype.volume.cytoplasmic_solid );
-
-  if( phenotype.volume.cytoplasmic_solid < 0.0 )
-  { phenotype.volume.cytoplasmic_solid = 0.0; }
-
-  phenotype.volume.solid = phenotype.volume.cytoplasmic_solid;
-
-  phenotype.volume.cytoplasmic = phenotype.volume.cytoplasmic_solid + phenotype.volume.cytoplasmic_fluid;
-  phenotype.volume.total = phenotype.volume.cytoplasmic_solid + phenotype.volume.cytoplasmic_fluid;
-
-  // Tell physicell to update the cell radius to the new volume
-  phenotype.geometry.update(pCell, phenotype, dt);
-
-
-*/
 }
 
 void setup_default_metabolic_model( void )

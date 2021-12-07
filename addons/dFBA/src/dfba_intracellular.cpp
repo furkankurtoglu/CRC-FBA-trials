@@ -134,7 +134,7 @@ bool dFBAIntracellular::dFBAIntracellular::need_update()
     return PhysiCell::PhysiCell_globals.current_time >= this->next_model_run;
 }
 
-void dFBAIntracellular::update(PhysiCell::Cell* pCell, PhysiCell::Phenotype& phenotype, double dt)
+float dFBAIntracellular::update(PhysiCell::Cell* pCell, PhysiCell::Phenotype& phenotype, double dt)
 {
    
     map<std::string, exchange_data>::iterator it;
@@ -159,8 +159,9 @@ void dFBAIntracellular::update(PhysiCell::Cell* pCell, PhysiCell::Phenotype& phe
         this->model.setReactionLowerBound(ex_strut.fba_flux_id, flux_bound);
     }
     this->model.runFBA();
+    float growth_rate = this->model.getObjectiveValue();
     // this->update_phenotype_parameters(phenotype);
-    // return 0;
+    return growth_rate;
 }
 
 int dFBAIntracellular::update_phenotype_parameters(PhysiCell::Phenotype& phenotype)
