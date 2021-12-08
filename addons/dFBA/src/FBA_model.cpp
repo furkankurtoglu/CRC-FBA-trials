@@ -295,7 +295,7 @@ void FBA_model::initLpModel()
     //this->lp_model = new ClpSimplex();
     handler = new CoinMessageHandler(nullptr);
     
-    handler->setLogLevel(-1);
+    handler->setLogLevel(0);
     lp_model.passInMessageHandler(handler);
 
     CoinPackedMatrix matrix;
@@ -358,6 +358,7 @@ void FBA_model::writeLp(const char *filename)
 void FBA_model::runFBA()
 {
     //--std::cout << "Running FBA... ";
+    this->lp_model.setLogLevel(0);
     this->lp_model.primal();
     if ( lp_model.isProvenOptimal() )
     {
